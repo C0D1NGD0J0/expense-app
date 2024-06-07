@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "ES2016",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "module": "CommonJS",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "strictPropertyInitialization": false,
+    "skipLibCheck": true,
+    "outDir": "./server/dist",
+    "rootDir": ".",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./server/*"],
+      "@services/*": ["./server/services/*"],
+      "@models/*": ["./server/models/*"],
+      "@db/*": ["./server/db/*"],
+      "@types/*": ["./server/types/*"],
+      "@utils/*": ["./server/utils/*"],
+      "@graphql/*": ["./server/graphql/*"]
+    }
+  },
+  "include": ["server/**/*"],
+  "exclude": ["node_modules", "**/*.spec.ts"]
+}

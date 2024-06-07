@@ -1,0 +1,7 @@
+{
+  "watch": ["server"],
+  "ext": ".ts .js .graphql",
+  "ignore": [".git", "node-modules/", "./server/dist/", "./server/coverage/"],
+  "env": { "NODE_ENV": "development" },
+  "exec": "ts-node -r tsconfig-paths/register -- ./server/server.ts"
+}
