@@ -1,0 +1,54 @@
+const userTypeDef = `#graphql
+  type Address {
+    street: String
+    city: String
+    state: String
+    country: String
+    postCode: String
+    streetNumber: String
+  }
+
+  type ComputedLocation {
+    type: String
+    coordinates: [Float]
+    address: Address
+    latAndlon: String
+  }
+
+  type User {
+    id: String!
+    dob: String
+    email: String!
+    avatar: String
+    createdAt: Date
+    updatedAt: Date
+    lastName: String!
+    password: String!
+    location: String!
+    firstName: String!
+    passwordResetToken: String
+    computedLocation: ComputedLocation!
+    passwordResetTokenExpiresAt: String
+  }
+
+  type CurrentUser {
+    id: String!
+    dob: String
+    email: String!
+    avatar: String
+    lastName: String!
+    password: String!
+    location: String!
+    firstName: String!
+  }
+
+  type Query {
+    users: [User!]
+    authUser: CurrentUser
+    user(id: ID!): User
+  }
+
+  type Mutation {
+    updateAccount
+  }
+`;

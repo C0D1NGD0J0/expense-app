@@ -31,25 +31,26 @@ enum StatusEnum {
 }
 
 model User {
-  id                          String @id @default(uuid())
-  email                       String @unique
+  id                          String           @id @default(uuid())
+  email                       String           @unique
   firstName                   String
   lastName                    String
   password                    String
   transactions                Transaction[]
   avatar                      String?
   location                    String?
-  postCode                    String
   dob                         DateTime?
-  passwordResetToken          String?
-  passwordResetTokenExpiresAt Int?
   computedLocation            Json?
+  passwordResetToken          String?
+  createdAt                   DateTime          @default(now())
+  updatedAt                   DateTime          @updatedAt
+  passwordResetTokenExpiresAt DateTime?
 }
 
 model Transaction {
-  id                            String  @id  @default(uuid())
+  id                            String              @id  @default(uuid())
   userId                        String
-  user                          User    @relation(fields: [userId], references: [id])
+  user                          User                @relation(fields: [userId], references: [id])
   description                   String
   amount                        Int
   location                      String
@@ -61,4 +62,6 @@ model Transaction {
   status        StatusEnum      @default(INITIATE)
   category      CategoryEnum    @default(EXPENSE)
   paymentType   PaymentTypeEnum @default(CARD)
+  createdAt                     DateTime            @default(now())
+  updatedAt                     DateTime            @updatedAt
 }

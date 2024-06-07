@@ -16,11 +16,10 @@ CREATE TABLE "User" (
     "password" TEXT NOT NULL,
     "avatar" TEXT,
     "location" TEXT,
-    "postCode" TEXT NOT NULL,
     "dob" TIMESTAMP(3),
-    "passwordResetToken" TEXT,
-    "passwordResetTokenExpiresAt" INTEGER,
     "computedLocation" JSONB,
+    "passwordResetToken" TEXT,
+    "passwordResetTokenExpiresAt" TIMESTAMP(3),
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
