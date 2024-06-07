@@ -23,26 +23,42 @@ enum CategoryEnum {
   INVESTMENT
 }
 
+enum StatusEnum {
+  PENDING
+  COMPLETED
+  FAILED
+  INITIATE
+}
+
 model User {
   id                          String @id @default(uuid())
   email                       String @unique
-  username                    String
+  firstName                   String
+  lastName                    String
   password                    String
   transactions                Transaction[]
   avatar                      String?
   location                    String?
+  postCode                    String
+  dob                         DateTime?
   passwordResetToken          String?
   passwordResetTokenExpiresAt Int?
+  computedLocation            Json?
 }
 
 model Transaction {
-  id            String  @id  @default(uuid())
-  userId        String
-  user          User    @relation(fields: [userId], references: [id])
-  description   String
-  amount        Int
-  location      String
-  date          DateTime
+  id                            String  @id  @default(uuid())
+  userId                        String
+  user                          User    @relation(fields: [userId], references: [id])
+  description                   String
+  amount                        Int
+  location                      String
+  name                          String
+  date                          DateTime
+  senderBankId                  String?
+  receiverBankId                String?
+  accountId                     String?
+  status        StatusEnum      @default(INITIATE)
   category      CategoryEnum    @default(EXPENSE)
   paymentType   PaymentTypeEnum @default(CARD)
 }
