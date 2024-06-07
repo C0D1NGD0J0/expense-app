@@ -1,4 +1,4 @@
-const userTypeDef = `#graphql
+export const userTypeDef = `#graphql
   type Address {
     street: String
     city: String
@@ -20,8 +20,8 @@ const userTypeDef = `#graphql
     dob: String
     email: String!
     avatar: String
-    createdAt: Date
-    updatedAt: Date
+    createdAt: String
+    updatedAt: String
     lastName: String!
     password: String!
     location: String!
@@ -44,11 +44,21 @@ const userTypeDef = `#graphql
 
   type Query {
     users: [User!]
-    authUser: CurrentUser
     user(id: ID!): User
+    getCurrentUser: CurrentUser
   }
 
   type Mutation {
-    updateAccount
+    updateAccount(input: UpdateAccountInput): User
+  }
+
+  input UpdateAccountInput {
+    dob: String
+    email: String!
+    avatar: String
+    lastName: String!
+    password: String!
+    location: String!
+    firstName: String!
   }
 `;

@@ -4,7 +4,7 @@ import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@apollo/server/express4";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
 import { App, AppSetup } from "./app";
-import { resolvers, typeDefs } from "@graphql/index";
+import { mergedResolver, mergedTypeDefs } from "@graphql/index";
 
 interface Context {
   rooftopId?: string;
@@ -31,8 +31,9 @@ class Server {
     }
 
     const server = new ApolloServer<Context>({
-      typeDefs,
-      resolvers,
+      typeDefs: mergedTypeDefs,
+      resolvers: mergedResolver,
+      introspection: process.env.NODE_ENV !== "production",
       plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
       formatError: (err) => {
         return {
@@ -66,7 +67,7 @@ class Server {
     httpServer.listen(this.PORT, () => {
       console.info(`
         Express server is live at http://localhost:${this.PORT}
-        GraphQL server is live at http://localhost:${this.PORT}/graphql
+        GraphQL playground is live at http://localhost:${this.PORT}/graphql
       `);
     });
 

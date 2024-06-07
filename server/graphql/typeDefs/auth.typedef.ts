@@ -1,5 +1,4 @@
-
-const authTypeDef = `#graphql
+export const authTypeDef = `#graphql
   input SignupInput {
     dob: String
     email: String!
@@ -22,10 +21,6 @@ const authTypeDef = `#graphql
   input ResetPasswordInput {
     token: String!
     password: String!
-  }
-
-  type Query {
-    getCurrentUser: CurrentUser
   }
 
   type Mutation {
