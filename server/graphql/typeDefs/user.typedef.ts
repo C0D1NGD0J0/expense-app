@@ -9,7 +9,6 @@ export const userTypeDef = `#graphql
   }
 
   type ComputedLocation {
-    type: String
     coordinates: [Float]
     address: Address
     latAndlon: String

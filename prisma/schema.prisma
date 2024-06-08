@@ -42,9 +42,12 @@ model User {
   dob                         DateTime?
   computedLocation            Json?
   passwordResetToken          String?
+  isActive                    Boolean           @default(false)
   createdAt                   DateTime          @default(now())
   updatedAt                   DateTime          @updatedAt
   passwordResetTokenExpiresAt DateTime?
+  activationToken             String?
+  activationTokenExpiresAt    DateTime?
 }
 
 model Transaction {

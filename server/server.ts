@@ -47,7 +47,7 @@ class Server {
       "/graphql",
       expressMiddleware(server, {
         context: async ({ req }) => {
-          return { rooftopId: req.headers.authorization };
+          return { req };
         },
       })
     );
