@@ -1,12 +1,17 @@
-import express, { Application } from "express";
-import http from "http";
-import { ApolloServer } from "@apollo/server";
-import { expressMiddleware } from "@apollo/server/express4";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
-import { App, AppSetup } from "./app";
+import { expressMiddleware } from "@apollo/server/express4";
+import express, { Application } from "express";
+import { ApolloServer } from "@apollo/server";
+import Logger from "bunyan";
+import http from "http";
+
 import { mergedResolver, mergedTypeDefs } from "@graphql/index";
+import { createLogger } from "@utils/index";
+import { App, AppSetup } from "./app";
+import { isDbConnected } from "./db";
 
 class Server {
+  private logger: Logger;
   private app: AppSetup;
   private expApp: Application;
   private PORT = process.env.PORT || 5000;
@@ -14,16 +19,25 @@ class Server {
   constructor() {
     this.expApp = express();
     this.app = new App(this.expApp);
+    this.logger = createLogger("Server");
   }
 
   init() {
-    this.app.initApp();
-    const httpServer = this.initHttpServer(this.expApp);
-    httpServer && this.initApolloServer(httpServer);
+    (async () => {
+      if (await isDbConnected()) {
+        this.app.initApp();
+        const httpServer = this.initHttpServer(this.expApp);
+        httpServer && this.initApolloServer(httpServer);
+      } else {
+        this.logger.error("DB connection missing.");
+        throw new Error("Missing DB connection..");
+      }
+    })();
   }
 
   private async initApolloServer(httpServer: http.Server) {
     if (!httpServer) {
+      this.logger.error("Unable to start Graphql server");
       throw new Error("Unable to start GraphQL server");
     }
 
@@ -56,7 +70,7 @@ class Server {
       this.startHTTPServer(_httpServer);
       return _httpServer;
     } catch (error: unknown) {
-      console.error("Error: ", (error as Error).message);
+      this.logger.error("Error: ", (error as Error).message);
     }
   }
 
@@ -70,7 +84,7 @@ class Server {
 
     // unhandled promise rejection
     process.once("unhandledRejection", (err: any) => {
-      console.error(`Error: ${err.message}`);
+      this.logger.error(`Error: ${err.message}`);
     });
   }
 }

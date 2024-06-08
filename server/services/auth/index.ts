@@ -1,14 +1,16 @@
+import { Prisma } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import Logger from "bunyan";
 import prisma from "@/db";
 import dayjs from "dayjs";
 
-import { excludeProperties, hashGenerator, jwtGenerator } from "@/utils";
+import { createLogger, hashGenerator, jwtGenerator } from "@/utils/index";
 import { IEmailOptions } from "@/types/utils.types";
 import { IUserSignUp } from "@/types/user.types";
 import { IAuthService } from "@/interfaces";
-import { Prisma } from "@prisma/client";
 
 export class AuthService implements IAuthService {
+  private logger: Logger;
   private excludedFields = [
     "password",
     "passwordResetToken",
@@ -17,6 +19,10 @@ export class AuthService implements IAuthService {
     "activationToken",
     "activationTokenExpiresAt",
   ];
+
+  constructor() {
+    this.logger = createLogger("AuthService");
+  }
 
   signup = async (data: IUserSignUp) => {
     try {
@@ -46,6 +52,7 @@ export class AuthService implements IAuthService {
         msg: "Check your email for your account activation link.",
       };
     } catch (error) {
+      this.logger.error("Auth service error: ", error);
       throw error;
     }
   };
@@ -61,6 +68,7 @@ export class AuthService implements IAuthService {
 
       if (!user) {
         const msg = "Activation link is invalid.";
+        this.logger.error("Auth service error: ", msg);
         // throw new ErrorResponse(msg, 422, 'authServiceError');
         throw new Error(msg);
       }
@@ -79,6 +87,7 @@ export class AuthService implements IAuthService {
         msg: "Account has been activated.",
       };
     } catch (error) {
+      this.logger.error("Auth service error: ", error);
       throw error;
     }
   };
@@ -89,6 +98,7 @@ export class AuthService implements IAuthService {
 
       if (!user) {
         const err = "Invalid email/password credentials.";
+        this.logger.error("Auth service error: ", err);
         throw new Error(err);
         // throw new ErrorResponse(err, 401, 'authServiceError');
       }
@@ -96,6 +106,7 @@ export class AuthService implements IAuthService {
       const isMatch = await this.validatePassword(password, user.password);
       if (!isMatch) {
         const err = "Invalid email/password credentials.";
+        this.logger.error("Auth service error: ", err);
         // throw new ErrorResponse(err, 401, 'authServiceError');
         throw new Error(err);
       }
@@ -106,6 +117,7 @@ export class AuthService implements IAuthService {
 
       return { success: true, data: jwt };
     } catch (error) {
+      this.logger.error("Auth service error: ", error);
       throw error;
     }
   };
@@ -117,6 +129,7 @@ export class AuthService implements IAuthService {
 
       if (!user) {
         const err = "Invalid email/password credentials.";
+        this.logger.error("Auth service error: ", err);
         throw new Error(err);
         // throw new ErrorResponse(err, 401, 'authServiceError');
       }
@@ -146,6 +159,7 @@ export class AuthService implements IAuthService {
         msg: "Password reset link has been sent to your email.",
       };
     } catch (error) {
+      this.logger.error("Auth service error: ", error);
       throw error;
     }
   };
@@ -162,7 +176,7 @@ export class AuthService implements IAuthService {
       });
 
       if (!user) {
-        console.log("Token is invalid or expired");
+        this.logger.error("Token is invalid or expired");
         throw new Error("Token is invalid or expired");
       }
 
@@ -191,6 +205,7 @@ export class AuthService implements IAuthService {
         msg: "Your password was successfully updated.",
       };
     } catch (error) {
+      this.logger.error("Auth service error: ", error);
       throw error;
     }
   };
