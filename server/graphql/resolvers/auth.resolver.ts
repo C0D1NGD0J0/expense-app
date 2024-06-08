@@ -2,7 +2,12 @@ import { GraphQLResolveInfo } from "graphql";
 
 import { AuthService } from "@services/index";
 import { applyMiddlewares, validateInput } from "@/utils/middlewares";
-import { UserSignUpSchema } from "@/utils/validations";
+import {
+  ForgotPasswordSchema,
+  LoginSchema,
+  ResetPasswordSchema,
+  UserSignUpSchema,
+} from "@/utils/validations";
 import { IUserSignUp } from "@/types/user.types";
 
 const authService = new AuthService();
@@ -18,17 +23,38 @@ export const authResolver = {
         return await authService.signup(input);
       }
     ),
-    login: async () => {
-      return true;
-    },
+    login: applyMiddlewares(validateInput(LoginSchema))(
+      async (
+        _root: any,
+        { input }: { input: { email: string; password: string } },
+        cxt: any,
+        info: GraphQLResolveInfo
+      ) => {
+        return await authService.login(input.email, input.password);
+      }
+    ),
     logout: async () => {
       return true;
     },
-    resetPassword: async () => {
-      return true;
-    },
-    forgotPassword: async () => {
-      return true;
-    },
+    forgotPassword: applyMiddlewares(validateInput(ForgotPasswordSchema))(
+      async (
+        _root: any,
+        { input }: { input: { email: string } },
+        cxt: any,
+        info: GraphQLResolveInfo
+      ) => {
+        return await authService.forgotPassword(input.email);
+      }
+    ),
+    resetPassword: applyMiddlewares(validateInput(ResetPasswordSchema))(
+      async (
+        _root: any,
+        { input }: { input: { token: string; password: string } },
+        cxt: any,
+        info: GraphQLResolveInfo
+      ) => {
+        return await authService.resetPassword(input.token, input.password);
+      }
+    ),
   },
 };
