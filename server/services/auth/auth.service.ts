@@ -4,7 +4,7 @@ import dayjs from "dayjs";
 
 import { excludeProperties, hashGenerator, jwtGenerator } from "@/utils";
 import { IEmailOptions } from "@/types/utils.types";
-import { IUserSignUp } from "@/types/auth.types";
+import { IUserSignUp } from "@/types/user.types";
 import { IAuthService } from "@/interfaces";
 import { Prisma } from "@prisma/client";
 

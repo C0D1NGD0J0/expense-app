@@ -1,5 +1,4 @@
 import crypto from "crypto";
-import bcrypt from "bcryptjs";
 import jwt, { SignOptions } from "jsonwebtoken";
 
 export const hashGenerator = (): string => {

@@ -1,4 +1,4 @@
-import { IUser, IUserSignUp } from "@/types/auth.types";
+import { IUser, IUserSignUp } from "@/types/user.types";
 import { IEmailOptions } from "@/types/utils.types";
 
 interface ServiceResponse<T = unknown> {

@@ -24,8 +24,11 @@ export const userTypeDef = `#graphql
     lastName: String!
     password: String!
     location: String!
+    isActive: Boolean!
     firstName: String!
+    activationToken: String
     passwordResetToken: String
+    activationTokenExpiresAt: String
     computedLocation: ComputedLocation!
     passwordResetTokenExpiresAt: String
   }
