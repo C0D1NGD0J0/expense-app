@@ -1,5 +1,5 @@
 import { GraphQLError } from "graphql";
-import { ZodError, ZodSchema } from "zod";
+import { ZodError, ZodIssue, ZodSchema } from "zod";
 
 // Validation Middleware
 export const validateInput =
@@ -7,23 +7,38 @@ export const validateInput =
   (resolve: any) =>
   async (parent: any, args: any, context: any, info: any) => {
     try {
-      schema.parse(args);
+      const res = schema.parse(args.input);
+      // console.log(res, "---res");
       return resolve(parent, args, context, info);
     } catch (error) {
       if (error instanceof ZodError) {
-        throw new GraphQLError(error.message, {
+        const errorMessages = (err: ZodError) => {
+          return JSON.stringify(err.errors.map((error) => error.message));
+        };
+
+        throw new GraphQLError(errorMessages(error), {
           extensions: {
             code: "VALIDATION_ERROR",
           },
         });
       }
+
       if (error instanceof GraphQLError) {
+        console.log(typeof error, "---erro2r");
         throw new GraphQLError(error.message, {
           extensions: {
             code: "INTERNAL_SERVER_ERROR",
           },
         });
       }
+
+      console.log(typeof error, "---error");
+      throw new GraphQLError("Internal Server Error", {
+        extensions: {
+          code: "INTERNAL_SERVER_ERROR",
+          message: (error as Error).message,
+        },
+      });
     }
   };
 

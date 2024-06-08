@@ -6,9 +6,6 @@ import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHt
 import { App, AppSetup } from "./app";
 import { mergedResolver, mergedTypeDefs } from "@graphql/index";
 
-interface Context {
-  rooftopId?: string;
-}
 class Server {
   private app: AppSetup;
   private expApp: Application;
@@ -30,14 +27,14 @@ class Server {
       throw new Error("Unable to start GraphQL server");
     }
 
-    const server = new ApolloServer<Context>({
+    const server = new ApolloServer({
       typeDefs: mergedTypeDefs,
       resolvers: mergedResolver,
       introspection: process.env.NODE_ENV !== "production",
       plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
       formatError: (err) => {
         return {
-          message: err.message,
+          message: JSON.parse(err.message),
         };
       },
     });

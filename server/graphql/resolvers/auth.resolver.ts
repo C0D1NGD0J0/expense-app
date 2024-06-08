@@ -1,8 +1,23 @@
+import { GraphQLResolveInfo } from "graphql";
+
+import { AuthService } from "@/services";
+import { applyMiddlewares, validateInput } from "@/utils/middlewares";
+import { UserSignUpSchema } from "@/utils/validations";
+import { IUserSignUp } from "@/types/user.types";
+
+const authService = new AuthService();
 const authResolver = {
   Mutation: {
-    signup: async () => {
-      return true;
-    },
+    signup: applyMiddlewares(validateInput(UserSignUpSchema))(
+      async (
+        _root: any,
+        { input }: { input: IUserSignUp },
+        cxt: any,
+        info: GraphQLResolveInfo
+      ) => {
+        return await authService.signup(input);
+      }
+    ),
     login: async () => {
       return true;
     },
