@@ -12,7 +12,17 @@ type ICacheResponse = {
   data?: ICacheReturnType;
 };
 
-export abstract class AppCache {
+interface IAppCache {
+  client: RedisClient;
+  log: Logger;
+  get(key: string): Promise<ICacheResponse>;
+  set(key: string, value: string, ttl?: number): Promise<ICacheResponse>;
+  setObject(key: string, value: unknown, ttl?: number): Promise<ICacheResponse>;
+  getObject(key: string): Promise<ICacheResponse | null>;
+  delete(key: string): Promise<ICacheResponse>;
+}
+
+export abstract class AppCache implements IAppCache {
   client: RedisClient;
   log: Logger;
 
@@ -24,6 +34,16 @@ export abstract class AppCache {
     this.cacheError();
   }
 
+  get = async (key: string): Promise<ICacheResponse> => {
+    try {
+      const data = await this.client.GET(key);
+      return { success: true, data };
+    } catch (error) {
+      this.log.error((error as Error).message);
+      throw error;
+    }
+  };
+
   set = async (
     key: string,
     value: string,
@@ -33,17 +53,7 @@ export abstract class AppCache {
       await this.client.SETEX(key, ttl, value);
       return { success: true };
     } catch (error) {
-      this.log.error(error.message);
-      throw error;
-    }
-  };
-
-  get = async (key: string): Promise<ICacheResponse> => {
-    try {
-      const data = await this.client.GET(key);
-      return { success: true, data };
-    } catch (error) {
-      this.log.error(error.message);
+      this.log.error((error as Error).message);
       throw error;
     }
   };
@@ -63,16 +73,17 @@ export abstract class AppCache {
       }
       return null;
     } catch (error) {
+      this.log.error((error as Error).message);
       throw error;
     }
   };
 
-  remove = async (key: string): Promise<ICacheResponse> => {
+  delete = async (key: string): Promise<ICacheResponse> => {
     try {
       const resp = await this.client.del(key);
       return { success: true };
     } catch (error) {
-      this.log.error(error);
+      this.log.error((error as Error).message);
       throw error;
     }
   };

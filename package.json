@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "node server/dist/server.js",
+    "deploy": "npm run build && prisma migrate deploy && npm run start",
+    "start": "node ./dist/server.js",
+    "build": "rm -rf ./dist && tsc",
     "dev": "nodemon"
   },
   "keywords": [],
@@ -15,6 +17,7 @@
     "@graphql-tools/merge": "^9.0.4",
     "@prisma/client": "^5.15.0",
     "bcryptjs": "^2.4.3",
+    "colors": "^1.4.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "dayjs": "^1.11.11",

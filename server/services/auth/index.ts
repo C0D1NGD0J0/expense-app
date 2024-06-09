@@ -1,16 +1,18 @@
-import { Prisma } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import Logger from "bunyan";
-import prisma from "@/db";
 import dayjs from "dayjs";
 
 import { createLogger, hashGenerator, jwtGenerator } from "@/utils/index";
 import { IEmailOptions } from "@/types/utils.types";
 import { IUserSignUp } from "@/types/user.types";
 import { IAuthService } from "@/interfaces";
+import { db } from "@/db";
 
 export class AuthService implements IAuthService {
   private logger: Logger;
+  prisma: PrismaClient;
+
   private excludedFields = [
     "password",
     "passwordResetToken",
@@ -21,12 +23,13 @@ export class AuthService implements IAuthService {
   ];
 
   constructor() {
+    this.prisma = db.getClient();
     this.logger = createLogger("AuthService");
   }
 
   signup = async (data: IUserSignUp) => {
     try {
-      const user = await prisma.user.create({
+      const user = await this.prisma.user.create({
         data: {
           ...data,
           password: await this.hashPassword(data.password),
@@ -59,7 +62,7 @@ export class AuthService implements IAuthService {
 
   activateAccount = async (token: string) => {
     try {
-      let user = await prisma.user.findFirst({
+      let user = await this.prisma.user.findFirst({
         where: {
           activationToken: token.trim(),
           activationTokenExpiresAt: { gte: new Date() },
@@ -73,7 +76,7 @@ export class AuthService implements IAuthService {
         throw new Error(msg);
       }
 
-      await prisma.user.update({
+      await this.prisma.user.update({
         where: { id: user.id },
         data: {
           isActive: true,
@@ -94,7 +97,7 @@ export class AuthService implements IAuthService {
 
   login = async (email: string, password: string) => {
     try {
-      const user = await prisma.user.findFirst({ where: { email } });
+      const user = await this.prisma.user.findFirst({ where: { email } });
 
       if (!user) {
         const err = "Invalid email/password credentials.";
@@ -124,7 +127,7 @@ export class AuthService implements IAuthService {
 
   forgotPassword = async (email: string) => {
     try {
-      const user = await prisma.user.findUnique({ where: { email } });
+      const user = await this.prisma.user.findUnique({ where: { email } });
       const oneHour = dayjs().add(1, "hour").toDate();
 
       if (!user) {
@@ -145,7 +148,7 @@ export class AuthService implements IAuthService {
         emailType: "FORGOT_PASSWORD",
       };
 
-      await prisma.user.update({
+      await this.prisma.user.update({
         where: { id: user.id },
         data: {
           passwordResetToken: hashGenerator(),
@@ -166,7 +169,7 @@ export class AuthService implements IAuthService {
 
   resetPassword = async (resetToken: string, password: string) => {
     try {
-      const user = await prisma.user.findFirst({
+      const user = await this.prisma.user.findFirst({
         where: {
           passwordResetToken: resetToken,
           passwordResetTokenExpiresAt: {
@@ -191,7 +194,7 @@ export class AuthService implements IAuthService {
         emailType: "RESET_PASSWORD_SUCCESS",
       };
 
-      await prisma.user.update({
+      await this.prisma.user.update({
         where: { id: user.id },
         data: {
           passwordResetToken: "",

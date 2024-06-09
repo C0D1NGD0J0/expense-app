@@ -1,15 +1,46 @@
 import { PrismaClient } from "@prisma/client";
+import Logger from "bunyan";
 
-const prisma = new PrismaClient();
+import { redisConnection } from "@services/redis/config";
+import { createLogger } from "@/utils";
+class Database {
+  private prisma: PrismaClient;
+  private logger: Logger;
 
-export const isDbConnected = async () => {
-  try {
-    await prisma.$queryRaw`SELECT 1`;
-    return true;
-  } catch (error) {
-    console.error("Database connection failed", error);
-    return false;
+  constructor() {
+    this.logger = createLogger("DatabseConfig");
+    this.prisma = new PrismaClient();
+    redisConnection.connect();
   }
-};
 
-export default prisma;
+  async connectToRedis(): Promise<boolean> {
+    try {
+      await redisConnection.connect();
+      return true;
+    } catch (error) {
+      this.logger.error("Redis connection error: ", error);
+      return false;
+    }
+  }
+
+  async isDbConnected(): Promise<boolean> {
+    try {
+      await this.prisma.$queryRaw`SELECT 1`;
+      this.logger.info("Connected to DB...");
+      return true;
+    } catch (error) {
+      this.logger.error("Database connection failed", error);
+      return false;
+    }
+  }
+
+  getClient(): PrismaClient {
+    return this.prisma;
+  }
+
+  async disconnect(): Promise<void> {
+    await this.prisma.$disconnect();
+  }
+}
+
+export const db = new Database();

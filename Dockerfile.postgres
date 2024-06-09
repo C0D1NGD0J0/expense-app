@@ -1,0 +1,12 @@
+FROM postgres:13
+
+ENV POSTGRES_VERSION=13
+
+# Create the database
+ENV POSTGRES_DB=${POSTGRES_DB}
+ENV POSTGRES_USER=${POSTGRES_USER}
+ENV POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+
+COPY ./prisma/migrations /docker-entrypoint-initdb.d/
+
+EXPOSE 5432

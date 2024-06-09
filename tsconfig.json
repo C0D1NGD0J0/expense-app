@@ -9,7 +9,7 @@
     "strict": true,
     "strictPropertyInitialization": false,
     "skipLibCheck": true,
-    "outDir": "./server/dist",
+    "outDir": "./dist",
     "rootDir": ".",
     "baseUrl": ".",
     "paths": {
@@ -22,6 +22,6 @@
       "@graphql/*": ["./server/graphql/*"]
     }
   },
-  "include": ["server/**/*"],
+  "include": ["server/**/*", "app.ts", "server.ts"],
   "exclude": ["node_modules", "**/*.spec.ts"]
 }

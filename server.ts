@@ -7,8 +7,8 @@ import http from "http";
 
 import { mergedResolver, mergedTypeDefs } from "@graphql/index";
 import { createLogger } from "@utils/index";
+import { db } from "@db/index";
 import { App, AppSetup } from "./app";
-import { isDbConnected } from "./db";
 
 class Server {
   private logger: Logger;
@@ -24,7 +24,7 @@ class Server {
 
   init() {
     (async () => {
-      if (await isDbConnected()) {
+      if (await db.isDbConnected()) {
         this.app.initApp();
         const httpServer = this.initHttpServer(this.expApp);
         httpServer && this.initApolloServer(httpServer);

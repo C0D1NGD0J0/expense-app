@@ -1,3 +1,5 @@
+import colors from "colors";
+import bunyan from "bunyan";
 import crypto from "crypto";
 import jwt, { SignOptions } from "jsonwebtoken";
 
@@ -34,4 +36,38 @@ export const excludeProperties = <T extends Record<string, any>>(
   }
 
   return newObj;
+};
+
+export const createLogger = (name: string) => {
+  const LOG_LEVELS = {
+    INFO: 30,
+    ERROR: 50,
+  };
+
+  // Custom stream to filter and format log entries
+  const customStream = {
+    write: (record: any) => {
+      let output;
+      if (record.level === LOG_LEVELS.ERROR) {
+        output = colors.red.bold(`${record.name}: ${record.msg}`);
+      } else if (record.level === LOG_LEVELS.INFO) {
+        output = colors.cyan.bold(`${record.name}: ${record.msg}`);
+      } else {
+        output = colors.grey.bold(`${record.name}: ${record.msg}`);
+      }
+      console.log(output);
+    },
+  };
+
+  return bunyan.createLogger({
+    name,
+    level: "debug",
+    streams: [
+      {
+        level: "debug",
+        type: "raw", // Use raw stream type
+        stream: customStream,
+      },
+    ],
+  });
 };

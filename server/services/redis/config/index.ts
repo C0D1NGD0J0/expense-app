@@ -1,11 +1,15 @@
 import { AppCache } from "@services/redis/cache/app.cache";
 
-class RedisConnection extends AppCache {
+interface IRedisConnection {
+  /** Connects to redis database */
+  connect(): Promise<void>;
+}
+class RedisConnection extends AppCache implements IRedisConnection {
   constructor() {
-    super("redisConnection");
+    super("RedisConnection");
   }
 
-  async connect(): Promise<void> {
+  async connect() {
     try {
       this.client.connect();
       this.client.on("connect", () => {
