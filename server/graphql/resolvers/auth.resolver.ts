@@ -9,6 +9,7 @@ import {
   UserSignUpSchema,
 } from "@/utils/validations";
 import { IUserSignUp } from "@/types/user.types";
+import { emailQueue } from "@/services/queues";
 
 const authService = new AuthService();
 export const authResolver = {
@@ -17,10 +18,12 @@ export const authResolver = {
       async (
         _root: any,
         { input }: { input: IUserSignUp },
-        cxt: any,
-        info: GraphQLResolveInfo
+        _cxt: any,
+        _info: GraphQLResolveInfo
       ) => {
-        return await authService.signup(input);
+        const { data, ...rest } = await authService.signup(input);
+        emailQueue.addMailToJobQueue("AUTH_EMAIL_JOB", data);
+        return rest;
       }
     ),
     login: applyMiddlewares(validateInput(LoginSchema))(

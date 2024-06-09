@@ -5,6 +5,7 @@ import bunyan from "bunyan";
 import logger from "morgan";
 import cors from "cors";
 import { createLogger } from "@utils/index";
+import { serverAdapter } from "@/services/queues";
 
 export interface AppSetup {
   initApp(): void;
@@ -48,7 +49,8 @@ export class App implements AppSetup {
   }
 
   private routes(app: Application) {
-    app.get("/status", (req, res) => {
+    app.use("/queues", serverAdapter.getRouter());
+    app.use("/status", (req, res) => {
       res.status(200).json({ success: true });
     });
   }
