@@ -1,3 +1,4 @@
+import { IEmailOptions } from "@/types/utils.types";
 export const authTypeDef = `#graphql
   input SignupInput {
     dob: String
@@ -23,10 +24,22 @@ export const authTypeDef = `#graphql
     password: String!
   }
 
+  type SignupResponse {
+    success: Boolean!
+    msg: String!
+  }
+
+  type LoginResponse {
+    success: Boolean!
+    msg: String!
+    # data in this instance should be jwt token
+    data: String!
+  }
+
   type Mutation {
     logout: String
-    signup(input: SignupInput): String
-    login(email: String!, pwd: String!): String
+    signup(input: SignupInput): SignupResponse
+    login(email: String!, pwd: String!): LoginResponse
     resetPassword(input: ResetPasswordInput): String!
     forgotPassword(input: ForgotPasswordInput): String!
   }

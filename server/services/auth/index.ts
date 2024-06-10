@@ -9,7 +9,7 @@ import { IUserSignUp } from "@/types/user.types";
 import { IAuthService } from "@/interfaces";
 import { db } from "@/db";
 
-export class AuthService implements IAuthService {
+class AuthService implements IAuthService {
   private logger: Logger;
   prisma: PrismaClient;
 
@@ -32,8 +32,9 @@ export class AuthService implements IAuthService {
       const user = await this.prisma.user.create({
         data: {
           ...data,
-          password: await this.hashPassword(data.password),
           activationToken: hashGenerator(),
+          dob: data.dob ? new Date(data.dob) : "",
+          password: await this.hashPassword(data.password),
           activationTokenExpiresAt: dayjs().add(1, "hour").toDate(),
         },
       });
@@ -229,3 +230,5 @@ export class AuthService implements IAuthService {
     return await bcrypt.compare(pwd, hashedPwd);
   };
 }
+
+export const authService = new AuthService();

@@ -16,7 +16,7 @@ export default class EmailWorker {
   sendAuthMail = async (job: Job, done: DoneCallback): Promise<void> => {
     try {
       job.progress(0);
-      const { data } = job.data;
+      const { data } = job;
       await this.mailer.sendmail(data);
       job.progress(100);
       done(null, job.data);

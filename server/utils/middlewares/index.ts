@@ -32,7 +32,6 @@ export const validateInput =
         });
       }
 
-      console.log(typeof error, "---error");
       throw new GraphQLError("Internal Server Error", {
         extensions: {
           code: "INTERNAL_SERVER_ERROR",

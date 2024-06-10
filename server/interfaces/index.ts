@@ -4,7 +4,7 @@ import { IEmailOptions } from "@/types/utils.types";
 interface ServiceResponse<T = unknown> {
   success: boolean;
   msg?: string;
-  data: T;
+  data?: T;
 }
 
 export interface IAuthService {

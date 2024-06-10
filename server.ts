@@ -48,7 +48,7 @@ class Server {
       plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
       formatError: (err) => {
         return {
-          message: JSON.parse(err.message),
+          message: err.message,
         };
       },
     });

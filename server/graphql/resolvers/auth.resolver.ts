@@ -1,6 +1,6 @@
 import { GraphQLResolveInfo } from "graphql";
 
-import { AuthService } from "@services/index";
+import { authService } from "@services/index";
 import { applyMiddlewares, validateInput } from "@/utils/middlewares";
 import {
   ForgotPasswordSchema,
@@ -11,7 +11,6 @@ import {
 import { IUserSignUp } from "@/types/user.types";
 import { emailQueue } from "@/services/queues";
 
-const authService = new AuthService();
 export const authResolver = {
   Mutation: {
     signup: applyMiddlewares(validateInput(UserSignUpSchema))(

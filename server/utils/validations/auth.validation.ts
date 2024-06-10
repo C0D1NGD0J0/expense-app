@@ -1,7 +1,17 @@
 import { z } from "zod";
 
+const isValidDate = (dateString: string | undefined): boolean => {
+  if (dateString === undefined) {
+    return true;
+  }
+  const date = new Date(dateString);
+  return !isNaN(date.getTime());
+};
+
 export const UserSignUpSchema = z.object({
-  dob: z.string().optional(),
+  dob: z.string().optional().refine(isValidDate, {
+    message: "Invalid date format",
+  }),
   email: z.string().email({ message: "Invalid email format" }),
   lastName: z.string().min(2, { message: "Last name cannot be empty" }),
   firstName: z.string().min(2, { message: "First name cannot be empty" }),
