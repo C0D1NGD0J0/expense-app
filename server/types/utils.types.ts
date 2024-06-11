@@ -4,3 +4,8 @@ export type IEmailOptions = {
   data: unknown;
   emailType: string;
 };
+
+export type RateLimitOptions = {
+  window: number;
+  limit: number;
+};

@@ -9,6 +9,7 @@ import { mergedResolver, mergedTypeDefs } from "@graphql/index";
 import { createLogger } from "@utils/index";
 import { db } from "@db/index";
 import { App, AppSetup } from "./app";
+import { errorHandler } from "@/utils/helper/errorHandler";
 
 class Server {
   private logger: Logger;
@@ -48,7 +49,7 @@ class Server {
       plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
       formatError: (err) => {
         return {
-          message: err.message,
+          message: errorHandler(err),
         };
       },
     });

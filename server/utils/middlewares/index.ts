@@ -1,5 +1,9 @@
+import { GraphQLResolveInfo } from "graphql";
+import { ZodError, ZodSchema } from "zod";
 import { GraphQLError } from "graphql";
-import { ZodError, ZodIssue, ZodSchema } from "zod";
+
+import { redisConnection } from "@/services/redis/config";
+import { RateLimitOptions } from "@/types/";
 
 // Validation Middleware
 export const validateInput =
@@ -8,7 +12,6 @@ export const validateInput =
   async (parent: any, args: any, context: any, info: any) => {
     try {
       const res = schema.parse(args.input);
-      // console.log(res, "---res");
       return resolve(parent, args, context, info);
     } catch (error) {
       if (error instanceof ZodError) {
@@ -22,16 +25,6 @@ export const validateInput =
           },
         });
       }
-
-      if (error instanceof GraphQLError) {
-        console.log(typeof error, "---erro2r");
-        throw new GraphQLError(error.message, {
-          extensions: {
-            code: "INTERNAL_SERVER_ERROR",
-          },
-        });
-      }
-
       throw new GraphQLError("Internal Server Error", {
         extensions: {
           code: "INTERNAL_SERVER_ERROR",
@@ -43,7 +36,8 @@ export const validateInput =
 
 // Authentication Middleware: TODO
 export const authenticate =
-  (resolve: any) => async (parent: any, args: any, context: any, info: any) => {
+  (resolve: any) =>
+  async (parent: any, args: any, context: any, info: GraphQLResolveInfo) => {
     if (!context.user) {
       throw new GraphQLError("Authentication required", {
         extensions: {
@@ -54,8 +48,28 @@ export const authenticate =
     return resolve(parent, args, context, info);
   };
 
-export const applyMiddlewares =
-  (...middlewares: any[]) =>
-  (resolver: any) => {
-    return middlewares.reduce((acc, middleware) => middleware(acc), resolver);
+// rate limiter middlware
+export const rateLimiter =
+  (ratelimitOpts: RateLimitOptions) =>
+  (resolver: any) =>
+  async (parent: any, args: any, context: any, info: GraphQLResolveInfo) => {
+    const { req } = context;
+    const ip = req.ip;
+    const key = `rl:${ip}:${info.fieldName}`;
+    const redis = redisConnection.getRedisInstance();
+
+    const results = await redis.incr(key);
+    if (results === 1) {
+      await redis.expire(key, ratelimitOpts.window);
+    }
+
+    if (results > ratelimitOpts.limit) {
+      throw new Error("Rate limit exceeded");
+    }
+
+    return resolver(parent, args, context, info);
   };
+
+export const applyMiddlewares = (middlewares: any[]) => (resolver: any) => {
+  return middlewares.reduce((acc, middleware) => middleware(acc), resolver);
+};

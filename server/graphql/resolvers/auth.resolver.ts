@@ -1,7 +1,11 @@
 import { GraphQLResolveInfo } from "graphql";
 
 import { authService } from "@services/index";
-import { applyMiddlewares, validateInput } from "@/utils/middlewares";
+import {
+  applyMiddlewares,
+  rateLimiter,
+  validateInput,
+} from "@/utils/middlewares";
 import {
   ForgotPasswordSchema,
   LoginSchema,
@@ -10,10 +14,14 @@ import {
 } from "@/utils/validations";
 import { IUserSignUp } from "@/types/user.types";
 import { emailQueue } from "@/services/queues";
+import { RATE_LIMIT_OPTS } from "@/utils";
 
 export const authResolver = {
   Mutation: {
-    signup: applyMiddlewares(validateInput(UserSignUpSchema))(
+    signup: applyMiddlewares([
+      rateLimiter(RATE_LIMIT_OPTS),
+      validateInput(UserSignUpSchema),
+    ])(
       async (
         _root: any,
         { input }: { input: IUserSignUp },
@@ -25,7 +33,10 @@ export const authResolver = {
         return rest;
       }
     ),
-    login: applyMiddlewares(validateInput(LoginSchema))(
+    login: applyMiddlewares([
+      rateLimiter(RATE_LIMIT_OPTS),
+      validateInput(LoginSchema),
+    ])(
       async (
         _root: any,
         { input }: { input: { email: string; password: string } },
@@ -38,7 +49,10 @@ export const authResolver = {
     logout: async () => {
       return true;
     },
-    forgotPassword: applyMiddlewares(validateInput(ForgotPasswordSchema))(
+    forgotPassword: applyMiddlewares([
+      rateLimiter(RATE_LIMIT_OPTS),
+      validateInput(ForgotPasswordSchema),
+    ])(
       async (
         _root: any,
         { input }: { input: { email: string } },
@@ -48,7 +62,10 @@ export const authResolver = {
         return await authService.forgotPassword(input.email);
       }
     ),
-    resetPassword: applyMiddlewares(validateInput(ResetPasswordSchema))(
+    resetPassword: applyMiddlewares([
+      rateLimiter(RATE_LIMIT_OPTS),
+      validateInput(ResetPasswordSchema),
+    ])(
       async (
         _root: any,
         { input }: { input: { token: string; password: string } },

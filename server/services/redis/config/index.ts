@@ -1,9 +1,10 @@
-import { AppCache } from "@services/redis/cache/app.cache";
+import { AppCache, RedisClient } from "@services/redis/cache/app.cache";
 
 interface IRedisConnection {
   /** Connects to redis database */
   connect(): Promise<void>;
 }
+
 class RedisConnection extends AppCache implements IRedisConnection {
   constructor() {
     super("RedisConnection");
@@ -18,6 +19,10 @@ class RedisConnection extends AppCache implements IRedisConnection {
     } catch (error) {
       this.log.error(error);
     }
+  }
+
+  getRedisInstance(): RedisClient {
+    return this.client;
   }
 }
 
