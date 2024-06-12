@@ -9,7 +9,7 @@ import { RateLimitOptions } from '@interfaces/index';
 export const validateInput =
   (schema: ZodSchema<any>) => (resolve: any) => async (parent: any, args: any, context: any, info: any) => {
     try {
-      const res = schema.parse(args.input);
+      schema.parse(args.input);
       return resolve(parent, args, context, info);
     } catch (error) {
       if (error instanceof ZodError) {

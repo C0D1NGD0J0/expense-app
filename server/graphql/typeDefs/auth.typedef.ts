@@ -1,4 +1,3 @@
-import { IEmailOptions } from '@/interfaces/utils.interface';
 export const authTypeDef = `#graphql
   input SignupInput {
     dob: String
@@ -19,12 +18,16 @@ export const authTypeDef = `#graphql
     email: String!
   }
 
+  input AccountActivationInput {
+    token: String!
+  }
+
   input ResetPasswordInput {
     token: String!
     password: String!
   }
 
-  type SignupResponse {
+  type Response {
     success: Boolean!
     msg: String!
   }
@@ -38,9 +41,10 @@ export const authTypeDef = `#graphql
 
   type Mutation {
     logout: String
-    signup(input: SignupInput): SignupResponse
-    login(email: String!, pwd: String!): LoginResponse
+    signup(input: SignupInput): Response
     resetPassword(input: ResetPasswordInput): String!
+    login(email: String!, pwd: String!): LoginResponse
     forgotPassword(input: ForgotPasswordInput): String!
+    accountActivation(input: AccountActivationInput): Response
   }
 `;

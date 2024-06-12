@@ -1,19 +1,31 @@
 import { GraphQLResolveInfo } from 'graphql';
 
-import { authService } from '@services/index';
 import { applyMiddlewares, rateLimiter, validateInput } from '@/utils/middlewares';
-import { ForgotPasswordSchema, LoginSchema, ResetPasswordSchema, UserSignUpSchema } from '@/utils/validations';
+import {
+  AccountActivationSchema,
+  ForgotPasswordSchema,
+  LoginSchema,
+  ResetPasswordSchema,
+  UserSignUpSchema,
+} from '@/utils/validations';
 import { IUserSignUp } from '@/interfaces/user.interface';
+import { AUTH_EMAIL_JOB, RATE_LIMIT_OPTS } from '@/utils';
 import { emailQueue } from '@/services/queues';
-import { RATE_LIMIT_OPTS } from '@/utils';
+import { authService } from '@services/index';
 
 export const authResolver = {
   Mutation: {
     signup: applyMiddlewares([rateLimiter(RATE_LIMIT_OPTS), validateInput(UserSignUpSchema)])(
       async (_root: any, { input }: { input: IUserSignUp }, _cxt: any, _info: GraphQLResolveInfo) => {
         const { data, ...rest } = await authService.signup(input);
-        emailQueue.addMailToJobQueue('AUTH_EMAIL_JOB', data);
+        emailQueue.addMailToJobQueue(AUTH_EMAIL_JOB, data);
         return rest;
+      }
+    ),
+    accountActivation: applyMiddlewares([validateInput(AccountActivationSchema)])(
+      async (_root: any, { input }: { input: { token: string } }, _cxt: any, _info: GraphQLResolveInfo) => {
+        const resp = await authService.activateAccount(input.token);
+        return resp;
       }
     ),
     login: applyMiddlewares([rateLimiter(RATE_LIMIT_OPTS), validateInput(LoginSchema)])(
