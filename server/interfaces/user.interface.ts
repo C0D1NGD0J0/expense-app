@@ -1,3 +1,5 @@
+import { IEmailOptions, ServiceResponse } from './utils.interface';
+
 // USER
 export type IUser = {
   id: string;
@@ -31,12 +33,20 @@ export type IUser = {
 
 export type IUserSignUp = Omit<
   IUser,
-  | "id"
-  | "createdAt"
-  | " updatedAt"
-  | "passwordResetToken"
-  | "passwordResetTokenExpiresAt"
-  | "computedLocation"
-  | "activationToken"
-  | "activationTokenExpiresAt"
+  | 'id'
+  | 'createdAt'
+  | ' updatedAt'
+  | 'passwordResetToken'
+  | 'passwordResetTokenExpiresAt'
+  | 'computedLocation'
+  | 'activationToken'
+  | 'activationTokenExpiresAt'
 >;
+
+export interface IAuthService {
+  signup(data: IUserSignUp): Promise<ServiceResponse<Partial<IEmailOptions>>>;
+  activateAccount(token: string): Promise<Omit<ServiceResponse, 'data'>>;
+  login(email: string, password: string): Promise<ServiceResponse<string>>;
+  forgotPassword(email: string): Promise<ServiceResponse<IEmailOptions>>;
+  resetPassword(resetToken: string, pwd: string): Promise<ServiceResponse<unknown>>;
+}

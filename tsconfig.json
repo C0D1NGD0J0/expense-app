@@ -18,6 +18,7 @@
       "@models/*": ["./server/models/*"],
       "@db/*": ["./server/db/*"],
       "@types/*": ["./server/types/*"],
+      "@interfaces/*": ["./server/interfaces/*"],
       "@utils/*": ["./server/utils/*"],
       "@graphql/*": ["./server/graphql/*"]
     }

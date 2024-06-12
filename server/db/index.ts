@@ -1,15 +1,19 @@
-import { PrismaClient } from "@prisma/client";
-import Logger from "bunyan";
+import { PrismaClient } from '@prisma/client';
+import Logger from 'bunyan';
 
-import { redisConnection } from "@services/redis/config";
-import { createLogger } from "@/utils";
+import { redisConnection } from '@services/redis/config';
+import { createLogger } from '@utils/index';
 class Database {
   private prisma: PrismaClient;
   private logger: Logger;
 
   constructor() {
-    this.logger = createLogger("DatabseConfig");
-    this.prisma = new PrismaClient();
+    this.logger = createLogger('DatabseConfig');
+    this.prisma = new PrismaClient({
+      datasources: {
+        db: { url: process.env.DATABASE_URL || '' },
+      },
+    });
     redisConnection.connect();
   }
 
@@ -18,7 +22,7 @@ class Database {
       await redisConnection.connect();
       return true;
     } catch (error) {
-      this.logger.error("Redis connection error: ", error);
+      this.logger.error('Redis connection error: ', error);
       return false;
     }
   }
@@ -26,10 +30,10 @@ class Database {
   async isDbConnected(): Promise<boolean> {
     try {
       await this.prisma.$queryRaw`SELECT 1`;
-      this.logger.info("Connected to DB...");
+      this.logger.info('Connected to DB...');
       return true;
     } catch (error) {
-      this.logger.error("Database connection failed", error);
+      this.logger.error('Database connection failed', error);
       return false;
     }
   }

@@ -1,7 +1,7 @@
-import { createClient } from "redis";
-import Logger from "bunyan";
+import { createClient } from 'redis';
+import Logger from 'bunyan';
 
-import { createLogger } from "@/utils";
+import { createLogger } from '@utils/index';
 
 export type RedisClient = ReturnType<typeof createClient>;
 
@@ -44,11 +44,7 @@ export abstract class AppCache implements IAppCache {
     }
   };
 
-  set = async (
-    key: string,
-    value: string,
-    ttl = 120
-  ): Promise<ICacheResponse> => {
+  set = async (key: string, value: string, ttl = 120): Promise<ICacheResponse> => {
     try {
       await this.client.SETEX(key, ttl, value);
       return { success: true };
@@ -89,7 +85,7 @@ export abstract class AppCache implements IAppCache {
   };
 
   private cacheError(): void {
-    this.client.on("error", (err: unknown) => {
+    this.client.on('error', (err: unknown) => {
       this.log.error(err);
     });
   }

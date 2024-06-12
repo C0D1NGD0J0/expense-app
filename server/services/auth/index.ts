@@ -1,30 +1,30 @@
-import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcryptjs";
-import Logger from "bunyan";
-import dayjs from "dayjs";
+import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
+import Logger from 'bunyan';
+import dayjs from 'dayjs';
 
-import { createLogger, hashGenerator, jwtGenerator } from "@/utils/index";
-import { IEmailOptions } from "@/types/utils.types";
-import { IUserSignUp } from "@/types/user.types";
-import { IAuthService } from "@/interfaces";
-import { db } from "@/db";
+import { createLogger, hashGenerator, jwtGenerator } from '@/utils/index';
+import { IEmailOptions } from '@/interfaces/utils.interface';
+import { IUserSignUp } from '@/interfaces/user.interface';
+import { IAuthService } from '@/interfaces';
+import { db } from '@/db';
 
 class AuthService implements IAuthService {
   private logger: Logger;
   prisma: PrismaClient;
 
   private excludedFields = [
-    "password",
-    "passwordResetToken",
-    "passwordResetTokenExpiresAt",
-    "computedLocation",
-    "activationToken",
-    "activationTokenExpiresAt",
+    'password',
+    'passwordResetToken',
+    'passwordResetTokenExpiresAt',
+    'computedLocation',
+    'activationToken',
+    'activationTokenExpiresAt',
   ];
 
   constructor() {
     this.prisma = db.getClient();
-    this.logger = createLogger("AuthService");
+    this.logger = createLogger('AuthService');
   }
 
   signup = async (data: IUserSignUp) => {
@@ -33,37 +33,37 @@ class AuthService implements IAuthService {
         data: {
           ...data,
           activationToken: hashGenerator(),
-          dob: data.dob ? new Date(data.dob) : "",
+          dob: data.dob ? new Date(data.dob) : '',
           password: await this.hashPassword(data.password),
-          activationTokenExpiresAt: dayjs().add(1, "hour").toDate(),
+          activationTokenExpiresAt: dayjs().add(1, 'hour').toDate(),
         },
       });
 
       // SEND EMAIL WITH ACTIVATION LINK
       const emailOptions: IEmailOptions = {
-        subject: "Activate your account",
+        subject: 'Activate your account',
         to: user.email,
         data: {
           fullname: `${user.firstName} ${user.lastName}`,
           activationUrl: `${process.env.FRONTEND_URL}/account_activation/${user.activationToken}`,
         },
-        emailType: "USER_REGISTRATION",
+        emailType: 'USER_REGISTRATION',
       };
 
       return {
         success: true,
         data: emailOptions,
-        msg: "Check your email for your account activation link.",
+        msg: 'Check your email for your account activation link.',
       };
     } catch (error) {
-      this.logger.error("Auth service error: ", error);
+      this.logger.error('Auth service error: ', error);
       throw error;
     }
   };
 
   activateAccount = async (token: string) => {
     try {
-      let user = await this.prisma.user.findFirst({
+      const user = await this.prisma.user.findFirst({
         where: {
           activationToken: token.trim(),
           activationTokenExpiresAt: { gte: new Date() },
@@ -71,8 +71,8 @@ class AuthService implements IAuthService {
       });
 
       if (!user) {
-        const msg = "Activation link is invalid.";
-        this.logger.error("Auth service error: ", msg);
+        const msg = 'Activation link is invalid.';
+        this.logger.error('Auth service error: ', msg);
         // throw new ErrorResponse(msg, 422, 'authServiceError');
         throw new Error(msg);
       }
@@ -81,17 +81,17 @@ class AuthService implements IAuthService {
         where: { id: user.id },
         data: {
           isActive: true,
-          activationToken: "",
-          activationTokenExpiresAt: "",
+          activationToken: '',
+          activationTokenExpiresAt: '',
         },
       });
 
       return {
         success: true,
-        msg: "Account has been activated.",
+        msg: 'Account has been activated.',
       };
     } catch (error) {
-      this.logger.error("Auth service error: ", error);
+      this.logger.error('Auth service error: ', error);
       throw error;
     }
   };
@@ -101,16 +101,16 @@ class AuthService implements IAuthService {
       const user = await this.prisma.user.findFirst({ where: { email } });
 
       if (!user) {
-        const err = "Invalid email/password credentials.";
-        this.logger.error("Auth service error: ", err);
+        const err = 'Invalid email/password credentials.';
+        this.logger.error('Auth service error: ', err);
         throw new Error(err);
         // throw new ErrorResponse(err, 401, 'authServiceError');
       }
 
       const isMatch = await this.validatePassword(password, user.password);
       if (!isMatch) {
-        const err = "Invalid email/password credentials.";
-        this.logger.error("Auth service error: ", err);
+        const err = 'Invalid email/password credentials.';
+        this.logger.error('Auth service error: ', err);
         // throw new ErrorResponse(err, 401, 'authServiceError');
         throw new Error(err);
       }
@@ -121,7 +121,7 @@ class AuthService implements IAuthService {
 
       return { success: true, data: jwt };
     } catch (error) {
-      this.logger.error("Auth service error: ", error);
+      this.logger.error('Auth service error: ', error);
       throw error;
     }
   };
@@ -129,24 +129,24 @@ class AuthService implements IAuthService {
   forgotPassword = async (email: string) => {
     try {
       const user = await this.prisma.user.findUnique({ where: { email } });
-      const oneHour = dayjs().add(1, "hour").toDate();
+      const oneHour = dayjs().add(1, 'hour').toDate();
 
       if (!user) {
-        const err = "Invalid email/password credentials.";
-        this.logger.error("Auth service error: ", err);
+        const err = 'Invalid email/password credentials.';
+        this.logger.error('Auth service error: ', err);
         throw new Error(err);
         // throw new ErrorResponse(err, 401, 'authServiceError');
       }
 
       // SEND EMAIL
       const emailOptions: IEmailOptions = {
-        subject: "Account Password Reset",
+        subject: 'Account Password Reset',
         to: user.email,
         data: {
           fullname: `${user.firstName} ${user.lastName}`,
           resetPasswordUrl: `${process.env.FRONTEND_URL}/reset_password/${user.passwordResetToken}`,
         },
-        emailType: "FORGOT_PASSWORD",
+        emailType: 'FORGOT_PASSWORD',
       };
 
       await this.prisma.user.update({
@@ -160,10 +160,10 @@ class AuthService implements IAuthService {
       return {
         success: true,
         data: emailOptions,
-        msg: "Password reset link has been sent to your email.",
+        msg: 'Password reset link has been sent to your email.',
       };
     } catch (error) {
-      this.logger.error("Auth service error: ", error);
+      this.logger.error('Auth service error: ', error);
       throw error;
     }
   };
@@ -180,36 +180,36 @@ class AuthService implements IAuthService {
       });
 
       if (!user) {
-        this.logger.error("Token is invalid or expired");
-        throw new Error("Token is invalid or expired");
+        this.logger.error('Token is invalid or expired');
+        throw new Error('Token is invalid or expired');
       }
 
       // SEND EMAIL
       const emailOptions = {
-        subject: "Password Reset Successful",
+        subject: 'Password Reset Successful',
         to: user.email,
         data: {
           fullname: `${user.firstName} ${user.lastName}`,
-          resetAt: dayjs().format("DD/MM/YYYY H:m:s"),
+          resetAt: dayjs().format('DD/MM/YYYY H:m:s'),
         },
-        emailType: "RESET_PASSWORD_SUCCESS",
+        emailType: 'RESET_PASSWORD_SUCCESS',
       };
 
       await this.prisma.user.update({
         where: { id: user.id },
         data: {
-          passwordResetToken: "",
-          passwordResetTokenExpiresAt: "",
+          passwordResetToken: '',
+          passwordResetTokenExpiresAt: '',
         },
       });
 
       return {
         success: true,
         data: emailOptions,
-        msg: "Your password was successfully updated.",
+        msg: 'Your password was successfully updated.',
       };
     } catch (error) {
-      this.logger.error("Auth service error: ", error);
+      this.logger.error('Auth service error: ', error);
       throw error;
     }
   };
@@ -219,10 +219,7 @@ class AuthService implements IAuthService {
     return await bcrypt.hash(password as string, salt);
   };
 
-  private validatePassword = async (
-    pwd: string,
-    hashedPwd: string
-  ): Promise<boolean> => {
+  private validatePassword = async (pwd: string, hashedPwd: string): Promise<boolean> => {
     if (!pwd || !hashedPwd) {
       return false;
     }

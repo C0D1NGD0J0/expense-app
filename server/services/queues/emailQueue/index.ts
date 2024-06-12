@@ -1,11 +1,11 @@
-import EmailWorker from "@/services/workers/email.worker";
-import { IEmailOptions } from "@/types/utils.types";
-import { BaseQueue } from "..";
+import EmailWorker from '@/services/workers/email.worker';
+import { IEmailOptions } from '@/interfaces/utils.interface';
+import { BaseQueue } from '..';
 
 class EmailQueue extends BaseQueue {
   constructor() {
-    super("Emails");
-    this.processQueueJobs("AUTH_EMAIL_JOB", 5, new EmailWorker().sendAuthMail);
+    super('Emails');
+    this.processQueueJobs('AUTH_EMAIL_JOB', 5, new EmailWorker().sendAuthMail);
   }
 
   addMailToJobQueue(qname: string, data: IEmailOptions) {

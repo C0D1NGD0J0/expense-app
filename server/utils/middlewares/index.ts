@@ -1,15 +1,13 @@
-import { GraphQLResolveInfo } from "graphql";
-import { ZodError, ZodSchema } from "zod";
-import { GraphQLError } from "graphql";
+import { GraphQLResolveInfo } from 'graphql';
+import { ZodError, ZodSchema } from 'zod';
+import { GraphQLError } from 'graphql';
 
-import { redisConnection } from "@/services/redis/config";
-import { RateLimitOptions } from "@/types/";
+import { redisConnection } from '@services/redis/config';
+import { RateLimitOptions } from '@interfaces/index';
 
 // Validation Middleware
 export const validateInput =
-  (schema: ZodSchema<any>) =>
-  (resolve: any) =>
-  async (parent: any, args: any, context: any, info: any) => {
+  (schema: ZodSchema<any>) => (resolve: any) => async (parent: any, args: any, context: any, info: any) => {
     try {
       const res = schema.parse(args.input);
       return resolve(parent, args, context, info);
@@ -21,13 +19,13 @@ export const validateInput =
 
         throw new GraphQLError(errorMessages(error), {
           extensions: {
-            code: "VALIDATION_ERROR",
+            code: 'VALIDATION_ERROR',
           },
         });
       }
-      throw new GraphQLError("Internal Server Error", {
+      throw new GraphQLError('Internal Server Error', {
         extensions: {
-          code: "INTERNAL_SERVER_ERROR",
+          code: 'INTERNAL_SERVER_ERROR',
           message: (error as Error).message,
         },
       });
@@ -36,12 +34,11 @@ export const validateInput =
 
 // Authentication Middleware: TODO
 export const authenticate =
-  (resolve: any) =>
-  async (parent: any, args: any, context: any, info: GraphQLResolveInfo) => {
+  (resolve: any) => async (parent: any, args: any, context: any, info: GraphQLResolveInfo) => {
     if (!context.user) {
-      throw new GraphQLError("Authentication required", {
+      throw new GraphQLError('Authentication required', {
         extensions: {
-          code: "UNAUTHENTICATED",
+          code: 'UNAUTHENTICATED',
         },
       });
     }
@@ -64,7 +61,7 @@ export const rateLimiter =
     }
 
     if (results > ratelimitOpts.limit) {
-      throw new Error("Rate limit exceeded");
+      throw new Error('Rate limit exceeded');
     }
 
     return resolver(parent, args, context, info);

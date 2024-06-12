@@ -1,4 +1,4 @@
-import { IEmailOptions } from "@/types/utils.types";
+import { IEmailOptions } from '@/interfaces/utils.interface';
 export const authTypeDef = `#graphql
   input SignupInput {
     dob: String
