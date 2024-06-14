@@ -2,12 +2,17 @@ import { GraphQLResolveInfo } from 'graphql';
 import { ZodError, ZodSchema } from 'zod';
 import { GraphQLError } from 'graphql';
 
-import { redisConnection } from '@services/redis/config';
+import { redisConnection } from '@/caching/redis/config';
 import { RateLimitOptions } from '@interfaces/index';
+import { Context } from 'server';
+
+type ResolverFn = (parent: any, args: any, context: Context, info: GraphQLResolveInfo) => Promise<any>;
 
 // Validation Middleware
 export const validateInput =
-  (schema: ZodSchema<any>) => (resolve: any) => async (parent: any, args: any, context: any, info: any) => {
+  (schema: ZodSchema<any>) =>
+  (resolve: any): ResolverFn =>
+  async (parent, args, context, info) => {
     try {
       schema.parse(args.input);
       return resolve(parent, args, context, info);
@@ -34,22 +39,23 @@ export const validateInput =
 
 // Authentication Middleware: TODO
 export const authenticate =
-  (resolve: any) => async (parent: any, args: any, context: any, info: GraphQLResolveInfo) => {
-    if (!context.user) {
-      throw new GraphQLError('Authentication required', {
-        extensions: {
-          code: 'UNAUTHENTICATED',
-        },
-      });
-    }
+  (resolve: any): ResolverFn =>
+  async (parent, args, context, info: GraphQLResolveInfo) => {
+    // if (!context.user) {
+    //   throw new GraphQLError('Authentication required', {
+    //     extensions: {
+    //       code: 'UNAUTHENTICATED',
+    //     },
+    //   });
+    // }
     return resolve(parent, args, context, info);
   };
 
 // rate limiter middlware
 export const rateLimiter =
   (ratelimitOpts: RateLimitOptions) =>
-  (resolver: any) =>
-  async (parent: any, args: any, context: any, info: GraphQLResolveInfo) => {
+  (resolver: any): ResolverFn =>
+  async (parent, args, context, info) => {
     const { req } = context;
     const ip = req.ip;
     const key = `rl:${ip}:${info.fieldName}`;
@@ -67,6 +73,8 @@ export const rateLimiter =
     return resolver(parent, args, context, info);
   };
 
-export const applyMiddlewares = (middlewares: any[]) => (resolver: any) => {
-  return middlewares.reduce((acc, middleware) => middleware(acc), resolver);
-};
+export const applyMiddlewares =
+  (middlewares: any[]) =>
+  (resolver: ResolverFn): ResolverFn => {
+    return middlewares.reduce((acc, middleware) => middleware(acc), resolver);
+  };

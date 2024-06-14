@@ -14,6 +14,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./server/*"],
+      "@caching/*": ["./server/caching/*"],
       "@services/*": ["./server/services/*"],
       "@models/*": ["./server/models/*"],
       "@db/*": ["./server/db/*"],

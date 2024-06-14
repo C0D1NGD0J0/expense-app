@@ -15,3 +15,10 @@ export interface ServiceResponse<T = unknown> {
   msg?: string;
   data?: T;
 }
+
+export type ICacheResponse<T = unknown> =
+  | {
+      success: boolean;
+      data?: T;
+    }
+  | boolean;

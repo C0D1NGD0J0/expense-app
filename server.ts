@@ -1,7 +1,7 @@
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 import { expressMiddleware } from '@apollo/server/express4';
-import express, { Application } from 'express';
-import { ApolloServer } from '@apollo/server';
+import express, { Application, Request, Response } from 'express';
+import { ApolloServer, BaseContext } from '@apollo/server';
 import Logger from 'bunyan';
 import http from 'http';
 
@@ -10,6 +10,11 @@ import { errorHandler } from '@/utils/helper/errorHandler';
 import { createLogger } from '@utils/index';
 import { App, AppSetup } from './app';
 import { db } from '@db/index';
+
+export type Context = BaseContext & {
+  req: Request;
+  res: Response;
+};
 
 class Server {
   private logger: Logger;
@@ -51,7 +56,7 @@ class Server {
       throw new Error('Unable to start GraphQL server');
     }
 
-    const server = new ApolloServer({
+    const server = new ApolloServer<Context>({
       typeDefs: mergedTypeDefs,
       resolvers: mergedResolver,
       introspection: process.env.NODE_ENV !== 'production',
@@ -67,8 +72,8 @@ class Server {
     this.expApp.use(
       '/graphql',
       expressMiddleware(server, {
-        context: async ({ req }) => {
-          return { req };
+        context: async ({ req, res }) => {
+          return { req, res };
         },
       })
     );

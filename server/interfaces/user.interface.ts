@@ -35,7 +35,7 @@ export type IUserSignUp = Omit<
   IUser,
   | 'id'
   | 'createdAt'
-  | ' updatedAt'
+  | 'updatedAt'
   | 'passwordResetToken'
   | 'passwordResetTokenExpiresAt'
   | 'computedLocation'
@@ -46,7 +46,33 @@ export type IUserSignUp = Omit<
 export interface IAuthService {
   signup(data: IUserSignUp): Promise<ServiceResponse<Partial<IEmailOptions>>>;
   activateAccount(token: string): Promise<Omit<ServiceResponse, 'data'>>;
-  login(email: string, password: string): Promise<ServiceResponse<string>>;
+  login(
+    email: string,
+    password: string
+  ): Promise<
+    ServiceResponse<{
+      jwt: string;
+      user: ICurrentUser;
+      refreshToken: string;
+    }>
+  >;
   forgotPassword(email: string): Promise<ServiceResponse<IEmailOptions>>;
   resetPassword(resetToken: string, pwd: string): Promise<ServiceResponse<unknown>>;
 }
+
+// Using Omit to exclude specific fields from IUser for ICurrentUser
+export type ICurrentUser = Omit<
+  IUser,
+  | 'createdAt'
+  | 'updatedAt'
+  | 'activationToken'
+  | 'computedLocation'
+  | 'passwordResetToken'
+  | 'activationTokenExpiresAt'
+  | 'passwordResetTokenExpiresAt'
+> & {
+  fullname: string;
+  dob?: Date | string;
+  location?: string;
+  avatar?: string;
+};

@@ -1,15 +1,23 @@
+import { Response } from 'express';
 import colors from 'colors';
 import bunyan from 'bunyan';
 import crypto from 'crypto';
-import jwt, { SignOptions } from 'jsonwebtoken';
 
 export const hashGenerator = (): string => {
   const token = crypto.randomBytes(10).toString('hex');
   return crypto.createHash('sha256').update(token).digest('hex');
 };
 
-export const jwtGenerator = (userId: string, secret = process.env.JWT_SECRET as string, opts: SignOptions) => {
-  return `Bearer ${jwt.sign({ id: userId }, secret, opts)}`;
+export const setAuthCookie = (cookieName: string, maxage: number, path = '/', token: string, res: Response) => {
+  const opts = {
+    path,
+    httpOnly: true,
+    maxAge: maxage, // should match jwt_expire value but in milliseconds
+    sameSite: false,
+    secure: process.env.NODE_ENV === 'production', //only works with https
+  };
+
+  return res.cookie(cookieName, token, opts);
 };
 
 export const excludeProperties = <T extends Record<string, any>>(obj: T, excludedProps: Set<keyof T>): Partial<T> => {

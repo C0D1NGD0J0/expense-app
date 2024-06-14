@@ -32,18 +32,11 @@ export const authTypeDef = `#graphql
     msg: String!
   }
 
-  type LoginResponse {
-    success: Boolean!
-    msg: String!
-    # data in this instance should be jwt token
-    data: String!
-  }
-
   type Mutation {
     logout: String
     signup(input: SignupInput): Response
     resetPassword(input: ResetPasswordInput): String!
-    login(email: String!, pwd: String!): LoginResponse
+    login(email: String!, pwd: String!): Response
     forgotPassword(input: ForgotPasswordInput): String!
     accountActivation(input: AccountActivationInput): Response
   }

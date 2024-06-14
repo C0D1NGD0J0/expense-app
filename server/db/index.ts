@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import Logger from 'bunyan';
 
-import { redisConnection } from '@services/redis/config';
+import { redisConnection } from '@/caching/redis/config';
 import { createLogger } from '@utils/index';
 class Database {
   private prisma: PrismaClient;

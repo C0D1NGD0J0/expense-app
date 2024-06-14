@@ -9,9 +9,10 @@ import {
   UserSignUpSchema,
 } from '@/utils/validations';
 import { IUserSignUp } from '@/interfaces/user.interface';
-import { AUTH_EMAIL_JOB, RATE_LIMIT_OPTS } from '@/utils';
+import { AUTH_EMAIL_JOB, AUTH_TOKEN, RATE_LIMIT_OPTS, setAuthCookie } from '@/utils';
 import { emailQueue } from '@/services/queues';
 import { authService } from '@services/index';
+import { authCache } from '@/caching/cache';
 
 export const authResolver = {
   Mutation: {
@@ -29,13 +30,13 @@ export const authResolver = {
       }
     ),
     login: applyMiddlewares([rateLimiter(RATE_LIMIT_OPTS), validateInput(LoginSchema)])(
-      async (
-        _root: any,
-        { input }: { input: { email: string; password: string } },
-        _cxt: any,
-        _info: GraphQLResolveInfo
-      ) => {
-        return await authService.login(input.email, input.password);
+      async (_, { input }: { input: { email: string; password: string } }, cxt, ___) => {
+        const { res } = cxt;
+        const resp = await authService.login(input.email, input.password);
+        authCache.saveAuthTokens(resp.data.user.id, [resp.data.jwt, resp.data.refreshToken]);
+        authCache.saveCurrentUser(resp.data.user);
+        setAuthCookie(AUTH_TOKEN, parseInt(process.env.COOKIE_MAXAGE as string), '/', resp.data.jwt, res);
+        return { success: true, msg: 'Login was successful.' };
       }
     ),
     logout: async () => {
