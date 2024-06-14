@@ -107,14 +107,18 @@ class AuthService implements IAuthService {
         const err = 'Invalid email/password credentials.';
         this.logger.error('Auth service error: ', err);
         throw new Error(err);
-        // throw new ErrorResponse(err, 401, 'authServiceError');
+      }
+
+      if (!user.isActive) {
+        const err = 'Email verification pending, check our inbox for activation link.';
+        this.logger.error('Auth service error: ', err);
+        throw new Error(err);
       }
 
       const isMatch = await this.validatePassword(password, user.password);
       if (!isMatch) {
         const err = 'Invalid email/password credentials.';
         this.logger.error('Auth service error: ', err);
-        // throw new ErrorResponse(err, 401, 'authServiceError');
         throw new Error(err);
       }
 
