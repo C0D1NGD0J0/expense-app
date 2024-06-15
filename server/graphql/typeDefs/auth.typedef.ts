@@ -36,7 +36,7 @@ export const authTypeDef = `#graphql
     logout: String
     signup(input: SignupInput): Response
     resetPassword(input: ResetPasswordInput): String!
-    login(email: String!, pwd: String!): Response
+    login(input: LoginInput): Response
     forgotPassword(input: ForgotPasswordInput): String!
     accountActivation(input: AccountActivationInput): Response
   }

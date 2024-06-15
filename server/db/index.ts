@@ -1,8 +1,9 @@
 import { PrismaClient } from '@prisma/client';
 import Logger from 'bunyan';
 
-import { redisConnection } from '@/caching/redis/config';
+import { redisConnection } from '@config/index';
 import { createLogger } from '@utils/index';
+
 class Database {
   private prisma: PrismaClient;
   private logger: Logger;
@@ -14,7 +15,6 @@ class Database {
         db: { url: process.env.DATABASE_URL || '' },
       },
     });
-    redisConnection.connect();
   }
 
   async connectToRedis(): Promise<boolean> {

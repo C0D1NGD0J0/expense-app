@@ -12,12 +12,14 @@ export const setAuthCookie = (cookieName: string, maxage: number, path = '/', to
   const opts = {
     path,
     httpOnly: true,
-    maxAge: maxage, // should match jwt_expire value but in milliseconds
-    sameSite: false,
-    secure: process.env.NODE_ENV === 'production', //only works with https
+    maxAge: maxage * 1000, //1hr should match jwt_expire value but in milliseconds
+    sameSite: 'none' as const,
+    secure: true,
+    // secure: process.env.NODE_ENV === 'production', //only works with https
   };
-
-  return res.cookie(cookieName, token, opts);
+  const bearerJwt = `Bearer ${token}`;
+  res.cookie(cookieName, bearerJwt, opts);
+  return res;
 };
 
 export const excludeProperties = <T extends Record<string, any>>(obj: T, excludedProps: Set<keyof T>): Partial<T> => {

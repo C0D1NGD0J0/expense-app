@@ -10,15 +10,14 @@ export type RateLimitOptions = {
   limit: number;
 };
 
-export interface ServiceResponse<T = unknown> {
+export interface ServiceResponse<T = any> {
   success: boolean;
   msg?: string;
   data?: T;
 }
 
-export type ICacheResponse<T = unknown> =
-  | {
-      success: boolean;
-      data?: T;
-    }
-  | boolean;
+export type ICacheResponse<T = any> = {
+  success: boolean;
+  data?: T | null;
+  error?: string;
+};

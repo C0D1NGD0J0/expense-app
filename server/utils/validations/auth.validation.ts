@@ -1,5 +1,6 @@
 import { db } from '@/db';
 import { z } from 'zod';
+const prisma = db.getClient();
 
 const isValidDate = (dateString: string | undefined): boolean => {
   if (dateString === undefined) {
@@ -15,8 +16,6 @@ const isEmailInSystem = async (email: string) => {
   });
   return !!user; // Returns true if user exists, otherwise false
 };
-
-const prisma = db.getClient();
 
 export const UserSignUpSchema = z.object({
   dob: z.string().optional().refine(isValidDate, {
@@ -68,6 +67,7 @@ export const LoginSchema = z.object({
   email: z.string().min(1, { message: 'Email field is required.' }).email({ message: 'Invalid email format' }),
   password: z.string().min(6, { message: 'Password must be at least 6 characters long' }),
 });
+// type _k = z.infer<typeof LoginSchema>;
 
 export const ForgotPasswordSchema = z.object({
   email: z
