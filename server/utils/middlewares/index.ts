@@ -68,6 +68,7 @@ export const isAuthenticated =
       const resp = await authCache.getCurrentUser(decoded.userId);
 
       if (resp.success) {
+        // add logged-in user info into global context obj
         context.user = resp.data;
       }
       return resolver(parent, args, context, info);
