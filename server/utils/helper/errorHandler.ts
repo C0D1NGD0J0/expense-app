@@ -1,20 +1,13 @@
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { GraphQLFormattedError } from 'graphql';
 
-interface ErrorWithCode extends Error {
+type ErrorWithCode = Error & {
   code?: string;
-}
-
-interface ErrorResponse {
-  msg: string;
-  httpCode: number;
-}
+};
 
 const getErrorMessageForRange = (err: any) => {
   const codeNum = parseInt(err.code.slice(1), 10);
   const errors: { msg: string; httpCode: number }[] = [];
-
-  console.error('Error occurred:', err.message);
   switch (true) {
     case codeNum >= 2000 && codeNum <= 2010:
       errors.push({
@@ -64,6 +57,6 @@ export const errorHandler = (error: ErrorWithCode | Error | GraphQLFormattedErro
     const errorMessage = getErrorMessageForRange(error);
     return `${errorMessage}`;
   }
-
+  console.log(error, '---ooooo----');
   throw new Error(error.message);
 };

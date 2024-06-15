@@ -1,9 +1,12 @@
 import { GraphQLResolveInfo } from 'graphql';
 import { ZodError, ZodSchema } from 'zod';
 import { GraphQLError } from 'graphql';
+import jwt from 'jsonwebtoken';
 
-import { redisConnection } from '@/caching/redis/config';
 import { RateLimitOptions } from '@interfaces/index';
+import { redisConnection } from '@config/index';
+import { AUTH_TOKEN } from '../helper';
+import { authCache } from '@/caching';
 import { Context } from 'server';
 
 type ResolverFn = (parent: any, args: any, context: Context, info: GraphQLResolveInfo) => Promise<any>;
@@ -14,10 +17,11 @@ export const validateInput =
   (resolve: any): ResolverFn =>
   async (parent, args, context, info) => {
     try {
-      schema.parse(args.input);
+      schema.parseAsync(args.input);
       return resolve(parent, args, context, info);
     } catch (error) {
       if (error instanceof ZodError) {
+        console.log('----ERR----', error);
         const errorMessages = (err: ZodError) => {
           return JSON.stringify(err.errors.map((error) => error.message));
         };
@@ -25,9 +29,11 @@ export const validateInput =
         throw new GraphQLError(errorMessages(error), {
           extensions: {
             code: 'VALIDATION_ERROR',
+            message: 'fucking hell',
           },
         });
       }
+
       throw new GraphQLError('Internal Server Error', {
         extensions: {
           code: 'INTERNAL_SERVER_ERROR',
@@ -37,18 +43,37 @@ export const validateInput =
     }
   };
 
-// Authentication Middleware: TODO
-export const authenticate =
-  (resolve: any): ResolverFn =>
-  async (parent, args, context, info: GraphQLResolveInfo) => {
-    // if (!context.user) {
-    //   throw new GraphQLError('Authentication required', {
-    //     extensions: {
-    //       code: 'UNAUTHENTICATED',
-    //     },
-    //   });
-    // }
-    return resolve(parent, args, context, info);
+// Authentication Middleware
+export const isAuthenticated =
+  (resolver: ResolverFn): ResolverFn =>
+  async (parent, args, context, info) => {
+    const { req } = context;
+
+    let token = req.cookies[AUTH_TOKEN];
+    if (token && token.startsWith('Bearer')) {
+      token = token.split(' ')[1];
+    }
+
+    if (!token) {
+      throw new GraphQLError('Authentication Error', {
+        extensions: {
+          code: 'AUTHENTICATION_ERROR',
+          message: 'Please login to proceed.',
+        },
+      });
+    }
+
+    try {
+      const decoded = <{ userId: string; iat: number; exp: number }>jwt.verify(token, process.env.JWT_SECRET as string);
+      const resp = await authCache.getCurrentUser(decoded.userId);
+
+      if (resp.success) {
+        context.user = resp.data;
+      }
+      return resolver(parent, args, context, info);
+    } catch (error: Error | any) {
+      console.log(error, '---err');
+    }
   };
 
 // rate limiter middlware

@@ -16,7 +16,7 @@ export class AuthCache extends BaseCache {
 
       if (!this.isValidTokensArray(tokens)) {
         this.log.error('Error adding tokens to cache.');
-        return false;
+        return { success: false, data: null, error: 'Error adding tokens to cache.' };
       }
 
       // tokens is array of jwt-token
@@ -36,7 +36,7 @@ export class AuthCache extends BaseCache {
       return { success: true };
     } catch (error) {
       this.log.error('Auth cache error: ', error);
-      return false;
+      return { success: false, data: null, error: (error as Error).message };
     }
   };
 
@@ -74,7 +74,7 @@ export class AuthCache extends BaseCache {
       return { success: true };
     } catch (error) {
       this.log.error('Error saving user to cache:', error);
-      return { success: false };
+      return { success: false, data: null, error: (error as Error).message };
     }
   };
 
@@ -85,12 +85,10 @@ export class AuthCache extends BaseCache {
       }
 
       const key = `currentuser:${userId}`;
-      const resp = await this.getItem(key);
-      console.log(resp, '=====resp======');
-      return { success: true };
+      return await this.getItem(key);
     } catch (error) {
       this.log.error('Auth cache error: ', error);
-      return { success: false };
+      return { success: false, data: null, error: (error as Error).message };
     }
   };
 

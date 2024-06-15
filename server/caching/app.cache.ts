@@ -9,9 +9,6 @@ export type RedisClient = ReturnType<typeof createClient>;
 interface IBaseCache {
   client: RedisClient;
   log: Logger;
-  // setItem(key: string, value: unknown, ttl?: number): Promise<ICacheResponse>;
-  // getItem(key: string): Promise<ICacheResponse>;
-  // deleteItems(keys: string[]): Promise<ICacheResponse>;
 }
 
 export abstract class BaseCache implements IBaseCache {
@@ -58,7 +55,11 @@ export abstract class BaseCache implements IBaseCache {
       };
     } catch (error) {
       this.log.error((error as Error).message);
-      return false;
+      return {
+        success: false,
+        data: null,
+        error: (error as Error).message,
+      };
     }
   };
 
@@ -66,9 +67,9 @@ export abstract class BaseCache implements IBaseCache {
     try {
       await this.client.del(keys);
       return { success: true };
-    } catch (error) {
+    } catch (error: unknown) {
       this.log.error((error as Error).message);
-      return false;
+      return { success: false, data: null, error: (error as Error).message };
     }
   };
 

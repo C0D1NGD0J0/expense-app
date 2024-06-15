@@ -1,12 +1,13 @@
+import { ICurrentUser } from './../../interfaces/user.interface';
 import { TokenService } from './token.service';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, User } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import Logger from 'bunyan';
 import dayjs from 'dayjs';
 
 import { createLogger, hashGenerator } from '@/utils/index';
 import { IEmailOptions } from '@/interfaces/utils.interface';
-import { IUserSignUp } from '@/interfaces/user.interface';
+import { IUser, IUserSignUp } from '@/interfaces/user.interface';
 import { IAuthService } from '@/interfaces';
 import { db } from '@/db';
 
@@ -85,7 +86,7 @@ class AuthService implements IAuthService {
         data: {
           isActive: true,
           activationToken: '',
-          activationTokenExpiresAt: '',
+          activationTokenExpiresAt: null,
         },
       });
 
@@ -104,35 +105,21 @@ class AuthService implements IAuthService {
       const user = await this.prisma.user.findFirst({ where: { email } });
 
       if (!user) {
-        const err = 'Invalid email/password credentials.';
+        const err = 'Invalid email/password credentials1.';
         this.logger.error('Auth service error: ', err);
         throw new Error(err);
-        // throw new ErrorResponse(err, 401, 'authServiceError');
       }
 
       const isMatch = await this.validatePassword(password, user.password);
       if (!isMatch) {
         const err = 'Invalid email/password credentials.';
         this.logger.error('Auth service error: ', err);
-        // throw new ErrorResponse(err, 401, 'authServiceError');
         throw new Error(err);
       }
 
       const jwt = this.tokenService.createAccessToken(user.id);
       const refreshToken = this.tokenService.createRefreshToken(user.id);
-
-      const currentuser = {
-        id: user.id,
-        dob: user.dob?.toISOString(),
-        email: user.email,
-        avatar: user.avatar ?? '',
-        lastName: user.lastName,
-        password: user.password,
-        location: user.location ?? '',
-        isActive: user.isActive,
-        firstName: user.firstName,
-        fullname: `${user.firstName} ${user.lastName}`,
-      };
+      const currentuser = this.generateCurrentUserObject(user);
 
       return { success: true, data: { user: currentuser, jwt, refreshToken } };
     } catch (error) {
@@ -147,10 +134,9 @@ class AuthService implements IAuthService {
       const oneHour = dayjs().add(1, 'hour').toDate();
 
       if (!user) {
-        const err = 'Invalid email/password credentials.';
+        const err = 'Invalid email credentials provided.';
         this.logger.error('Auth service error: ', err);
         throw new Error(err);
-        // throw new ErrorResponse(err, 401, 'authServiceError');
       }
 
       // SEND EMAIL
@@ -175,7 +161,7 @@ class AuthService implements IAuthService {
       return {
         success: true,
         data: emailOptions,
-        msg: 'Password reset link has been sent to your email.',
+        msg: 'Password reset link has been sent to your inbox.',
       };
     } catch (error) {
       this.logger.error('Auth service error: ', error);
@@ -241,6 +227,20 @@ class AuthService implements IAuthService {
     }
 
     return await bcrypt.compare(pwd, hashedPwd);
+  };
+
+  private generateCurrentUserObject = (user: User) => {
+    return {
+      id: user.id,
+      dob: user.dob?.toISOString(),
+      email: user.email,
+      lastName: user.lastName,
+      isActive: user.isActive,
+      avatar: user.avatar ?? '',
+      firstName: user.firstName,
+      location: user.location ?? '',
+      fullname: `${user.firstName} ${user.lastName}`,
+    } as ICurrentUser;
   };
 }
 
