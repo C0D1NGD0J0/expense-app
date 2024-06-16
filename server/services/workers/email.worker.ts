@@ -1,8 +1,9 @@
-import { DoneCallback, Job } from "bull";
-import Logger from "bunyan";
+import { DoneCallback, Job } from 'bull';
+import Logger from 'bunyan';
 
-import { createLogger } from "@utils/helper";
-import Mailer from "../mailer";
+import { createLogger } from '@utils/helper';
+import Mailer from '../mailer';
+import { IEmailOptions } from '@/interfaces';
 
 export default class EmailWorker {
   mailer: Mailer;
@@ -10,19 +11,33 @@ export default class EmailWorker {
 
   constructor() {
     this.mailer = new Mailer();
-    this.logger = createLogger("EmailWorker");
+    this.logger = createLogger('EmailWorker');
   }
 
-  sendAuthMail = async (job: Job, done: DoneCallback): Promise<void> => {
+  send = async (job: Job, done: DoneCallback): Promise<void> => {
     try {
       job.progress(0);
       const { data } = job;
-      await this.mailer.sendmail(data);
+      const result = await this.sendmail(data);
+      if (result) {
+        job.progress(100);
+        done(null, job.data);
+      }
       job.progress(100);
-      done(null, job.data);
+      done(new Error('Unable to send email presently.'), null);
     } catch (error) {
       this.logger.error(error);
       done(error as Error, null);
+    }
+  };
+
+  private sendmail = async (data: IEmailOptions): Promise<boolean> => {
+    try {
+      await this.mailer.sendmail(data);
+      return true;
+    } catch (error) {
+      this.logger.error(error);
+      return false;
     }
   };
 }

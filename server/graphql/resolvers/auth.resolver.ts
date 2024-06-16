@@ -9,7 +9,14 @@ import {
   UserSignUpSchema,
 } from '@/utils/validations';
 import { IUserSignUp } from '@/interfaces/user.interface';
-import { AUTH_EMAIL_JOB, AUTH_TOKEN, RATE_LIMIT_OPTS, setAuthCookie } from '@/utils';
+import {
+  AUTH_EMAIL_JOB,
+  AUTH_TOKEN,
+  RATE_LIMIT_OPTS,
+  RESET_PASSWORD_JOB,
+  FORGOT_PASSWORD_JOB,
+  setAuthCookie,
+} from '@/utils';
 import { emailQueue } from '@/services/queues';
 import { authService } from '@services/index';
 import { authCache } from '@/caching';
@@ -47,7 +54,9 @@ export const authResolver = {
     },
     forgotPassword: applyMiddlewares([rateLimiter(RATE_LIMIT_OPTS), validateInput(ForgotPasswordSchema)])(
       async (_root: any, { input }: { input: { email: string } }, _cxt: any, _info: GraphQLResolveInfo) => {
-        return await authService.forgotPassword(input.email);
+        const { data, ...rest } = await authService.forgotPassword(input.email);
+        emailQueue.addMailToJobQueue(FORGOT_PASSWORD_JOB, data);
+        return rest;
       }
     ),
     resetPassword: applyMiddlewares([rateLimiter(RATE_LIMIT_OPTS), validateInput(ResetPasswordSchema)])(
@@ -57,7 +66,9 @@ export const authResolver = {
         _cxt: any,
         _info: GraphQLResolveInfo
       ) => {
-        return await authService.resetPassword(input.token, input.password);
+        const { data, ...rest } = await authService.resetPassword(input.token, input.password);
+        emailQueue.addMailToJobQueue(RESET_PASSWORD_JOB, data);
+        return rest;
       }
     ),
   },
