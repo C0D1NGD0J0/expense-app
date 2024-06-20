@@ -20,13 +20,12 @@ export class AuthCache extends BaseCache {
       }
 
       // tokens is array of jwt-token
-      // tokens[0] = accessToken
-      // tokena[1] = refreshToken
+      // tokens = [accessToken, refreshToken];
       const key = `${this.authPrefix}:${userid}`;
       const [accessToken, refreshToken] = tokens;
       const pipeline = this.client.multi();
       // Get expiration for the tokens
-      const refreshTokenTTL = parseInt(process.env.REFRESH_TOKEN_TTL as string); // e.g., 86400 for 24 hours
+      const refreshTokenTTL = parseInt(process.env.REFRESH_TOKEN_MAXAGE as string); // e.g., 86400 for 24 hours
       pipeline.hSet(key, { accessToken, refreshToken });
       // Set expiration for the hash key using the refresh token's TTL
       pipeline.expire(key, refreshTokenTTL);
@@ -35,7 +34,7 @@ export class AuthCache extends BaseCache {
 
       return { success: true };
     } catch (error) {
-      this.log.error('Auth cache error: ', error);
+      this.log.error('Auth cache error <saveTokens>: ', error);
       return { success: false, data: null, error: (error as Error).message };
     }
   };
@@ -96,6 +95,11 @@ export class AuthCache extends BaseCache {
     try {
       if (!this.client.isOpen) {
         await this.client.connect();
+      }
+
+      if (!userId) {
+        this.log.error('Auth cache logout error: userId missing');
+        return { success: false };
       }
 
       const currentUserKey = `currentuser:${userId}`;

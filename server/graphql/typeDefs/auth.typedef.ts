@@ -29,15 +29,16 @@ export const authTypeDef = `#graphql
 
   type Response {
     success: Boolean!
-    msg: String!
+    msg: String
   }
 
   type Mutation {
     logout: String
-    signup(input: SignupInput): Response
-    resetPassword(input: ResetPasswordInput): String!
+    refreshToken: Response
     login(input: LoginInput): Response
-    forgotPassword(input: ForgotPasswordInput): String!
+    signup(input: SignupInput): Response
+    resetPassword(input: ResetPasswordInput): Response
+    forgotPassword(input: ForgotPasswordInput): Response
     accountActivation(input: AccountActivationInput): Response
   }
 `;

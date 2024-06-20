@@ -1,18 +1,17 @@
-import { ICurrentUser } from './../../interfaces/user.interface';
 import { TokenService } from './token.service';
-import { PrismaClient, User } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import Logger from 'bunyan';
 import dayjs from 'dayjs';
 
-import { createLogger, hashGenerator } from '@/utils/index';
+import { createLogger, generateCurrentUserObject, hashGenerator } from '@/utils/index';
 import { IEmailOptions } from '@/interfaces/utils.interface';
-import { IUser, IUserSignUp } from '@/interfaces/user.interface';
+import { IUserSignUp } from '@/interfaces/user.interface';
 import { IAuthService } from '@/interfaces';
 import { db } from '@/db';
 
 class AuthService implements IAuthService {
-  prisma: PrismaClient;
+  private prisma: PrismaClient;
   private logger: Logger;
   private tokenService: TokenService;
 
@@ -123,11 +122,10 @@ class AuthService implements IAuthService {
         throw new Error(err);
       }
 
-      const jwt = this.tokenService.createAccessToken(user.id);
-      const refreshToken = this.tokenService.createRefreshToken(user.id);
-      const currentuser = this.generateCurrentUserObject(user);
+      const { accessToken, refreshToken } = await this.tokenService.createJwtTokens(user.id);
+      const currentuser = generateCurrentUserObject(user);
 
-      return { success: true, data: { user: currentuser, jwt, refreshToken } };
+      return { success: true, data: { user: currentuser, jwt: accessToken, refreshToken } };
     } catch (error) {
       this.logger.error('Auth service error: ', error);
       throw error;
@@ -233,20 +231,6 @@ class AuthService implements IAuthService {
     }
 
     return await bcrypt.compare(pwd, hashedPwd);
-  };
-
-  private generateCurrentUserObject = (user: User) => {
-    return {
-      id: user.id,
-      dob: user.dob?.toISOString(),
-      email: user.email,
-      lastName: user.lastName,
-      isActive: user.isActive,
-      avatar: user.avatar ?? '',
-      firstName: user.firstName,
-      location: user.location ?? '',
-      fullname: `${user.firstName} ${user.lastName}`,
-    } as ICurrentUser;
   };
 }
 

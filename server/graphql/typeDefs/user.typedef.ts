@@ -39,7 +39,6 @@ export const userTypeDef = `#graphql
     email: String!
     avatar: String
     lastName: String!
-    password: String!
     location: String!
     firstName: String!
   }

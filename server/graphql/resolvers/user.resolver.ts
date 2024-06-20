@@ -6,7 +6,9 @@ import { applyMiddlewares, isAuthenticated } from '@/utils/middlewares';
 
 const userResolver = {
   Query: {
-    getCurrentUser: applyMiddlewares([isAuthenticated])(async (_root: any, _args, cxt, _info) => {}),
+    getCurrentUser: applyMiddlewares([isAuthenticated])(async (_root: any, _args, cxt, _info) => {
+      return cxt.user;
+    }),
   },
   Mutation: {},
 };

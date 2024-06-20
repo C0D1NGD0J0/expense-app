@@ -15,7 +15,7 @@ import { db } from '@db/index';
 export type Context = BaseContext & {
   req: Request;
   res: Response;
-  user: ICurrentUser | any;
+  user: ICurrentUser | null;
 };
 
 class Server {
@@ -46,14 +46,19 @@ class Server {
     })();
   }
 
-  async getServerInstances(): Promise<{ apolloServer: ApolloServer<Context>; httpServer: http.Server | null }> {
+  async getServerInstances(): Promise<{
+    apolloServer: ApolloServer<Context>;
+    httpServer: http.Server | null;
+  }> {
     return {
       apolloServer: this.apolloServer,
       httpServer: this.httpServer ?? null,
     };
   }
 
-  private async initApolloServer(httpServer: http.Server | undefined): Promise<ApolloServer<Context>> {
+  private async initApolloServer(
+    httpServer: http.Server | undefined
+  ): Promise<ApolloServer<Context>> {
     if (!httpServer) {
       this.logger.error('Unable to start Graphql server');
       throw new Error('Unable to start GraphQL server');

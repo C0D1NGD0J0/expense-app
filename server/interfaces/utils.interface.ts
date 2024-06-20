@@ -21,3 +21,5 @@ export type ICacheResponse<T = any> = {
   data?: T | null;
   error?: string;
 };
+
+export type TokenType = 'accessToken' | 'refreshToken';
